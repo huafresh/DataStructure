@@ -3,12 +3,14 @@ package com.hua.datastructrue_java.binary_tree;
 import java.util.HashMap;
 
 /**
+ * 二叉树结点对象
+ *
  * @author hua
  * @version V1.0
- * @date 2019/2/18 14:54
+ * @date 2019/2/19 14:25
  */
 
-class TreeNode<T extends Comparable<T>> {
+public class TreeNode<T> {
 
     TreeNode<T> parent;
     TreeNode<T> left;
@@ -16,7 +18,7 @@ class TreeNode<T extends Comparable<T>> {
     T value;
     private HashMap<String, Object> extras;
 
-    TreeNode(T value) {
+    public TreeNode(T value) {
         this.value = value;
     }
 
@@ -32,5 +34,18 @@ class TreeNode<T extends Comparable<T>> {
             return extras.get(key);
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return value != null ? value.toString() : super.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof TreeNode) {
+            return value.equals(((TreeNode) o).value);
+        }
+        return super.equals(o);
     }
 }

@@ -10,21 +10,22 @@ import java.util.Stack;
  * @date 2019/2/18 16:47
  */
 
-public class RBTree<T extends Comparable<T>> extends BSTree<T> {
+public class RedBlackTree<T extends Comparable<T>> extends SearchTree<T> {
 
     @Override
-    public void insert(TreeNode<T> node) {
-        RBTreeNode<T> rbTreeNode = new RBTreeNode<>(node.value);
+    public boolean insert(TreeNode<T> node) {
+        RBTreeNode<T> insert = new RBTreeNode<>(node);
         //rbTreeNode.left = new RBTreeNode<>(null, true);
         //rbTreeNode.right = new RBTreeNode<>(null, true);
-        super.insert(rbTreeNode);
-        fixUpInsert(rbTreeNode);
+        super.insert(insert);
+        fixUpInsert(insert);
+        return true;
     }
 
     @Override
     public TreeNode<T> delete(TreeNode<T> node) {
         TreeNode<T> newNode = super.delete(node);
-        if (newNode != null && newNode instanceof RBTree.RBTreeNode) {
+        if (newNode != null && newNode instanceof RedBlackTree.RBTreeNode) {
             fixUpDelete((RBTreeNode<T>) newNode);
         }
 
@@ -38,12 +39,12 @@ public class RBTree<T extends Comparable<T>> extends BSTree<T> {
             //黑+红，直接设为黑色
             if (curNode.isRed()) {
                 curNode.color = COLOR.BLACK;
-                return;
+                break;
             }
 
             //黑+黑，且为根，不调整
             if (curNode.isBlack() && curNode.parent == null) {
-                return;
+                break;
             }
 
             RBTreeNode<T> parent = (RBTreeNode<T>) curNode.parent;
@@ -76,29 +77,32 @@ public class RBTree<T extends Comparable<T>> extends BSTree<T> {
             }
         }
 
+        //checkRbTreeIllegal();
+
     }
 
     private void fixUpInsert(RBTreeNode<T> node) {
         RBTreeNode<T> curNode = node;
-        while (true) {
+        while (curNode != null) {
             RBTreeNode<T> parent = (RBTreeNode<T>) curNode.parent;
 
             //根不需要调整
-            if (node.parent == null) {
-                break;
-            }
-
-            RBTreeNode<T> uncle = findUncle(parent);
-            RBTreeNode<T> grandParent = (RBTreeNode<T>) parent.parent;
-
-            //父结点为黑不用调整
-            if (parent.color == COLOR.BLACK) {
+            if (parent == null) {
+                curNode.setBlack();
                 break;
             }
 
             if (curNode.color == null) {
                 curNode.setRed();
             }
+
+            //父结点为黑不用调整
+            if (parent.color == COLOR.BLACK) {
+                break;
+            }
+
+            RBTreeNode<T> uncle = findUncle(parent);
+            RBTreeNode<T> grandParent = (RBTreeNode<T>) parent.parent;
 
             //三个case情况
             if (uncle.isRed()) {
@@ -116,33 +120,54 @@ public class RBTree<T extends Comparable<T>> extends BSTree<T> {
             }
         }
 
+        //checkRbTreeIllegal();
     }
 
-    private boolean checkRbTreeIllegal() {
+    private int blackNum = -1;
+
+    private void checkRbTreeIllegal() {
         if (root == null) {
-            return true;
+            return;
         }
 
         RBTreeNode node = (RBTreeNode) root;
         if (node.isRed()) {
-            return false;
+            return;
         }
 
-        BSTree.levelTraversal(root, new ITraversal<T>() {
+        BaseTree.levelTraversal(root, new ITraversal<T>() {
             @Override
-            public void onTraversal(TreeNode<T> node) {
+            public void onTraversal(TreeNode<T> curNode) {
                 //把当前结点当成根结点进行后序遍历，回调的栈的内容就是页结点
                 //到当前结点的路径
-                BSTree.behindTraversalWithStack(node, new ITraversalWithStack<T>() {
+                blackNum = -1;
+                SearchTree.behindTraversalWithStack(curNode, new ITraversalWithStack<T>() {
                     @Override
-                    public void onTraversal(Stack<TreeNode<T>> stack, TreeNode<T> node) {
+                    public void onTraversal(Stack<TreeNode<T>> stack, TreeNode<T> endNode) {
                         //判断结点为叶结点后统计栈中黑色结点的个数，如果出现不一致，则红黑树校验失败
-                        if (node.left == null && node.right == null) {
+                        if (endNode.left == null && endNode.right == null) {
                             Stack<TreeNode<T>> temp = new Stack<>();
-                            while (!stack.isEmpty()){
+                            int black = 0;
+                            while (!stack.isEmpty()) {
                                 TreeNode<T> pop = stack.pop();
+                                if (pop instanceof RedBlackTree.RBTreeNode) {
+                                    if (((RBTreeNode) pop).isBlack()) {
+                                        black++;
+                                    }
+                                }
+                                temp.push(pop);
+                            }
 
-                                temp.push()
+                            if (blackNum == -1) {
+                                blackNum = black;
+                            } else {
+                                if (blackNum != black) {
+                                    throw new RuntimeException("RB tree check failed");
+                                }
+                            }
+
+                            while (!temp.isEmpty()) {
+                                stack.push(temp.pop());
                             }
                         }
 
@@ -156,23 +181,61 @@ public class RBTree<T extends Comparable<T>> extends BSTree<T> {
 
     private RBTreeNode<T> findUncle(RBTreeNode<T> parent) {
         RBTreeNode<T> uncle;
-        if (parent.value.compareTo(parent.parent.value) < 0) {
+        if (isLeftChild(parent, parent.parent)) {
             uncle = (RBTreeNode<T>) parent.parent.right;
         } else {
             uncle = (RBTreeNode<T>) parent.parent.left;
         }
+
+        //普通的BST搜索树，uncle很有可能是空的，此时把它当作NIL结点
+        if (uncle == null) {
+            uncle = new RBTreeNode<T>(new TreeNode<T>(null), true);
+        }
+
         return uncle;
     }
 
-    private void leftRotate(RBTreeNode<T> node) {
-        TreeNode<T> temp = node.right.left;
-        node.right.left = node;
+    private void leftRotate(TreeNode<T> node) {
+        TreeNode<T> right = node.right;
+        TreeNode<T> parent = node.parent;
+
+        right.parent = parent;
+        if (parent != null) {
+            if (isLeftChild(node, parent)) {
+                parent.left = right;
+            } else {
+                parent.right = right;
+            }
+        } else {
+            //如果支点是根，则要修改root指针
+            root = right;
+        }
+        node.parent = right;
+
+        //当前结点作为右结点的左结点
+        TreeNode<T> temp = right.left;
+        right.left = node;
         node.right = temp;
     }
 
-    private void rightRotate(RBTreeNode<T> node) {
-        TreeNode<T> temp = node.left.right;
-        node.left.right = node;
+    private void rightRotate(TreeNode<T> node) {
+        TreeNode<T> left = node.left;
+        TreeNode<T> parent = node.parent;
+
+        left.parent = parent;
+        if (parent != null) {
+            if (isLeftChild(node, parent)) {
+                parent.left = left;
+            } else {
+                parent.right = left;
+            }
+        } else {
+            root = left;
+        }
+
+        node.parent = left;
+        TreeNode<T> temp = left.right;
+        left.right = node;
         node.left = temp;
     }
 
@@ -181,17 +244,28 @@ public class RBTree<T extends Comparable<T>> extends BSTree<T> {
         BLACK
     }
 
-    static class RBTreeNode<T extends Comparable<T>> extends TreeNode<T> {
+    static class RBTreeNode<T extends Comparable<T>> extends SearchTreeNode<T> {
         COLOR color;
         boolean isNIL;
 
-        RBTreeNode(T value) {
+        RBTreeNode(TreeNode<T> value) {
             this(value, false);
         }
 
-        RBTreeNode(T value, boolean nil) {
+        RBTreeNode(TreeNode<T> value, boolean nil) {
             super(value);
             this.isNIL = nil;
+            if (nil) {
+                color = COLOR.BLACK;
+            }
+        }
+
+        @Override
+        public String toString() {
+            if (value != null) {
+                return value.toString() + ":" + color;
+            }
+            return super.toString();
         }
 
         boolean isRed() {
