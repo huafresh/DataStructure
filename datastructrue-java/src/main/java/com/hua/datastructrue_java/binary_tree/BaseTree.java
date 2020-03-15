@@ -88,13 +88,13 @@ public abstract class BaseTree<T> implements ITreeCrud<T> {
         });
     }
 
-    public static <T> void middleTraversal(TreeNode<T> node, ITraversalWithExtras<T> traversal) {
-        if (node == null) {
+    public static <T> void middleTraversal(TreeNode<T> root, ITraversalWithExtras<T> traversal) {
+        if (root == null) {
             return;
         }
 
         Stack<TreeNode<T>> stack = new Stack<>();
-        TreeNode<T> curNode = node;
+        TreeNode<T> curNode = root;
         while (curNode != null || !stack.isEmpty()) {
             while (curNode != null) {
                 stack.push(curNode);

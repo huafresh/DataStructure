@@ -1,7 +1,6 @@
 package com.hua.datastructrue_java;
 
 
-
 import com.hua.datastructrue_java.binary_tree.SearchTree;
 import com.hua.datastructrue_java.binary_tree.TreeNode;
 
@@ -14,7 +13,7 @@ import java.util.Random;
  */
 
 public class JavaMain {
-
+private static int[] testArray = new int[]{138, 148, 9, 8, 71, 173, 111, 10, 156, 177, 39, 17, 8, 61, 123, 30, 28, 23, 104, 66};
     private static int[] array = new int[]{
             97,
             38,
@@ -45,11 +44,11 @@ public class JavaMain {
             data[i] = random.nextInt(200);
         }
 
-//        System.out.println("before sort：\n");
-//        printArray(data);
-//        BSTree.sort(data);
-//        System.out.println("after sort：\n");
-//        printArray(data);
+        System.out.println("before sort: ");
+        printArray(data);
+        SortUtil.radixSort(data);
+        System.out.println("after sort: ");
+        printArray(data);
 
 //        System.out.println("before rb sort:");
 //        printArray(data);
@@ -57,21 +56,22 @@ public class JavaMain {
 //        System.out.println("after rb sort:");
 //        printArray(array);
 
-        SearchTree<Integer> st = new SearchTree<>();
-        for (int i : array) {
-            st.insert(new TreeNode<Integer>(i));
-        }
-        st.graphPrint();
+//        SearchTree<Integer> st = new SearchTree<>();
+//        for (int i : array) {
+//            st.insert(new TreeNode<Integer>(i));
+//        }
+//        st.graphPrint();
 
 //        System.out.println(" __20__ ");
 //        System.out.println(" |     |");
 //        System.out.println("12     40");
     }
 
-    private static void printArray(int[] data) {
+    public static void printArray(int[] data) {
         for (int i : data) {
-            System.out.println(i);
+            System.out.print(i + ", ");
         }
+        System.out.println(" ");
     }
 
 }

@@ -1,10 +1,8 @@
 package com.hua.datastructure;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-
-import com.hua.datastructure.binary_tree.BSTree;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_bst_sort).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
 
             }
         });
