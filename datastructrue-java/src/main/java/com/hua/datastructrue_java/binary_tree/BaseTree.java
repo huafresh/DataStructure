@@ -129,12 +129,12 @@ public abstract class BaseTree<T> implements ITreeCrud<T> {
 
 
     private static <T> void behindTraversalInternal(
-            TreeNode<T> node,
+            TreeNode<T> root,
             ITraversal<T> traversal,
             ITraversalWithStack<T> traversalWithStack) {
 
         Stack<TreeNode<T>> stack = new Stack<>();
-        TreeNode<T> curNode = node;
+        TreeNode<T> curNode = root;
         while (curNode != null || !stack.isEmpty()) {
 
             while (curNode != null) {
